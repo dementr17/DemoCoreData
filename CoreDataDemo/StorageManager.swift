@@ -14,14 +14,6 @@ class StorageManager {
     var taskList: [Task] = []
     
     private init() {}
-   
-    func saveTask(context: NSManagedObjectContext) {
-        do {
-            try context.save()
-        } catch let error {
-            print(error)
-        }
-    }
     
     func fetchTask(context: NSManagedObjectContext) {
         let fetchRequest = Task.fetchRequest()
@@ -30,6 +22,14 @@ class StorageManager {
             taskList = try context.fetch(fetchRequest)
         } catch {
            print("Faild to fetch data", error)
+        }
+    }
+   
+    func saveTask(context: NSManagedObjectContext) {
+        do {
+            try context.save()
+        } catch let error {
+            print(error)
         }
     }
     
@@ -59,7 +59,20 @@ class StorageManager {
     func editTask(_ taskName: String, context: NSManagedObjectContext, indexPath: IndexPath) {
         let task = Task(context: context)
         task.name = taskName
-
+        
+        let fetchRequest = Task.fetchRequest()
+        
+        if let result = try? context.fetch(fetchRequest) {
+            for object in result {
+                let task = taskList[indexPath.row]
+                if object == task {
+//                    context.delete(object)
+//                    let newObject = taskList[indexPath.row]
+//                    context.insert(newObject)
+                }
+            }
+        }
+        taskList.remove(at: indexPath.row)
         taskList[indexPath.row] = task
         saveTask(context: context)
     }

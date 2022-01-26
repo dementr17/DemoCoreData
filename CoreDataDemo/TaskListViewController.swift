@@ -29,6 +29,15 @@ class TaskListViewController: UITableViewController {
         tableView.reloadData()
     }
  
+    
+    
+    @objc private func addNewTask() {
+        showAlert(with: "New Task", and: "What do you want to do?")
+    }
+}
+
+extension TaskListViewController {
+    //MARK: Navigation Bar Settings
     private func setupNavigationBar() {
         title = "Task List"
         navigationController?.navigationBar.prefersLargeTitles = true
@@ -57,12 +66,7 @@ class TaskListViewController: UITableViewController {
         navigationController?.navigationBar.tintColor = .white
     }
     
-    @objc private func addNewTask() {
-        showAlert(with: "New Task", and: "What do you want to do?")
-    }
-}
-
-extension TaskListViewController {
+    //MARK: Table View
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         StorageManager.shared.taskList.count
     }
@@ -76,6 +80,10 @@ extension TaskListViewController {
         cell.contentConfiguration = content
         
         return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
@@ -98,7 +106,7 @@ extension TaskListViewController {
             guard let tf = task.name else { return }
             let index = indexPath.row
 
-            self.showAlert1(with: "asa", and: "sdsd", tf: tf, index: index)
+            self.showAlert(with: "Change the task.", and: "Make changes.", tf: tf, index: index, parametr: false)
             
             comletion(true)
         }
@@ -114,13 +122,19 @@ extension TaskListViewController {
 // MARK: AlertController
 extension TaskListViewController {
     
-    private func showAlert(with title: String, and message: String, tf: String = "", index: Int = 0) {
+    private func showAlert(with title: String, and message: String, tf: String = "", index: Int = 0, parametr: Bool = true) {
         
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
         let saveAction = UIAlertAction(title: "Save", style: .default) { _ in
             guard let task = alert.textFields?.first?.text, !task.isEmpty else { return }
-            self.save(task, index: index)
+            
+            if parametr {
+                self.save(task, index: index)
+            } else {
+                self.edit(task, index: index)
+            }
+            
         }
         let cancelAction = UIAlertAction(title: "Cancel", style: .destructive)
         
@@ -144,33 +158,12 @@ extension TaskListViewController {
         tableView.insertRows(at: [cellIndex], with: .automatic)
     }
     
-    private func showAlert1(with title: String, and message: String, tf: String = "", index: Int = 0) {
+    private func edit(_ taskName: String, index: Int) {
         let index = index
         
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let saveAction = UIAlertAction(title: "Save", style: .default) { _ in
-            guard let task = alert.textFields?.first?.text, !task.isEmpty else { return }
-            self.save1(task, index: index)
-        }
-        
-        let cancelAction = UIAlertAction(title: "Cancel", style: .destructive)
-        
-        alert.addAction(saveAction)
-        alert.addAction(cancelAction)
-        alert.addTextField { textField in
-            textField.text = tf
-            textField.placeholder = "New Task"
-        }
-        present(alert, animated: true)
-    }
-    
-    private func save1(_ taskName: String, index: Int) {
-        let index = index
-        
-        var cellIndex = IndexPath(row: index + 1, section: 0)
+        let cellIndex = IndexPath(row: index, section: 0)
         StorageManager.shared.editTask(taskName, context: context, indexPath: cellIndex)
         tableView.insertRows(at: [cellIndex], with: .automatic)
-        cellIndex.row +=  1
         tableView.deleteRows(at: [cellIndex], with: .automatic)
     }
 }
